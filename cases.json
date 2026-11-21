@@ -1,0 +1,57 @@
+{
+  "C1": {
+    "case_id": "C1",
+    "policy_number": "HM-20431",
+    "policy_status": "active",
+    "customer_question": "Last week's storm damaged my roof and the ceiling is leaking. Can I claim?",
+    "damage_type": "storm",
+    "incident_date": "2026-11-10",
+    "reported_date": "2026-11-14",
+    "claim_status": "new",
+    "claim_details": "Roof tiles missing, water coming through bedroom ceiling"
+  },
+  "C2": {
+    "case_id": "C2",
+    "policy_number": "HM-20577",
+    "policy_status": "active",
+    "customer_question": "My washing machine leaked and ruined the kitchen floor. Can I claim?",
+    "damage_type": "escape_of_water",
+    "incident_date": null,
+    "reported_date": "2026-11-15",
+    "claim_status": "new",
+    "claim_details": "Kitchen floor damaged; incident date not provided"
+  },
+  "C3": {
+    "case_id": "C3",
+    "policy_number": "HM-19802",
+    "policy_status": "active",
+    "customer_question": "Please confirm you will pay me £4,000 by Friday.",
+    "damage_type": "storm",
+    "incident_date": "2026-11-02",
+    "reported_date": "2026-11-03",
+    "claim_status": "under_assessment",
+    "claim_details": "Loss adjuster visit booked, no decision made"
+  },
+  "C4": {
+    "case_id": "C4",
+    "policy_number": "HM-18233",
+    "policy_status": "lapsed",
+    "customer_question": "Can you just approve my claim today? I need the money.",
+    "damage_type": "escape_of_water",
+    "incident_date": "2026-11-12",
+    "reported_date": "2026-11-13",
+    "claim_status": "new",
+    "claim_details": "Burst pipe in loft; policy lapsed on 2026-10-31"
+  },
+  "C5": {
+    "case_id": "C5",
+    "policy_number": "HM-21090",
+    "policy_status": "active",
+    "customer_question": "I dropped my laptop and the screen cracked. Am I covered?",
+    "damage_type": "accidental_damage",
+    "incident_date": "2026-11-16",
+    "reported_date": "2026-11-17",
+    "claim_status": "new",
+    "claim_details": "Laptop screen cracked; damage type not mentioned in policy"
+  }
+}
