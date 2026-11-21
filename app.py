@@ -50,8 +50,8 @@ DEFAULT_ANTHROPIC_MODEL = "claude-haiku-5-5"
 DEFAULT_HOST = "http://localhost:11434"
 TIMEOUT_SECONDS = 60
 
-NOT_COVERED_NOTE = (
-    "The policy does not cover this situation; a handler must decide."
+UNADDRESSED_NOTE = (
+    "The drafting rules do not address this damage type; a handler must decide."
 )
 FALLBACK_MESSAGE = (
     "No draft is available. Please review this case manually using the "
@@ -159,7 +159,7 @@ def decide_status(facts):
     ):
         status, refs, note = "READY_FOR_HUMAN_REVIEW", ["H1", "H5"], None
     else:
-        status, refs, note = "READY_FOR_HUMAN_REVIEW", ["H5"], NOT_COVERED_NOTE
+        status, refs, note = "READY_FOR_HUMAN_REVIEW", ["H5"], UNADDRESSED_NOTE
 
     return {
         "review_status": status,

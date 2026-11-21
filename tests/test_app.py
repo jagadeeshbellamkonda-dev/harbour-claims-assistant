@@ -55,8 +55,10 @@ def test_decide_status_all_cases(case_id):
     assert (d["review_status"], d["evidence_refs"], d["missing_information"]) == (status, refs, missing)
 
 
-def test_c5_has_not_covered_note_and_others_do_not():
-    assert "handler must decide" in app.decide_status(facts_for("C5"))["note"]
+def test_c5_has_unaddressed_note_and_others_do_not():
+    assert app.decide_status(facts_for("C5"))["note"] == (
+        "The drafting rules do not address this damage type; a handler must decide."
+    )
     for cid in ("C1", "C2", "C3", "C4"):
         assert app.decide_status(facts_for(cid))["note"] is None
 
@@ -236,6 +238,11 @@ def test_offline_demo_all_cases(case_id, capsys):
     assert "UNAVAILABLE" not in out
     assert "draft_reply:" in out
     assert "No flags raised." in out
+
+
+def test_offline_demo_c5_shows_exact_note(capsys):
+    out = run_case("C5", never_called, capsys, offline_demo=True)
+    assert "note: The drafting rules do not address this damage type; a handler must decide." in out
 
 
 @pytest.mark.parametrize("case_id", app.CASE_IDS)

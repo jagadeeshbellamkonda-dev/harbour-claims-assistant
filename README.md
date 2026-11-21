@@ -73,7 +73,7 @@ Python only checked the structure. The evaluation in `docs/results.md` (three mo
 
 Version 2 therefore splits the work:
 
-- `decide_status()` applies the hard rules in Python before any model call, in this order: lapsed or cancelled policy gives BLOCKED (H3, H5); a null `policy_number` or `incident_date` gives NEEDS_INFORMATION (H2) and lists those fields; `under_assessment` gives READY_FOR_HUMAN_REVIEW (H4, H5); storm or escape of water reported within 30 days gives READY_FOR_HUMAN_REVIEW (H1, H5); anything else gives READY_FOR_HUMAN_REVIEW (H5) with a note that the policy does not cover the situation and a handler must decide.
+- `decide_status()` applies the hard rules in Python before any model call, in this order: lapsed or cancelled policy gives BLOCKED (H3, H5); a null `policy_number` or `incident_date` gives NEEDS_INFORMATION (H2) and lists those fields; `under_assessment` gives READY_FOR_HUMAN_REVIEW (H4, H5); storm or escape of water reported within 30 days gives READY_FOR_HUMAN_REVIEW (H1, H5); anything else gives READY_FOR_HUMAN_REVIEW (H5) with the note "The drafting rules do not address this damage type; a handler must decide."
 - The model receives those decisions as fixed facts and returns only `{"draft_reply": "..."}`. Any extra key makes the result UNAVAILABLE, so the model cannot change the status, refs or missing fields.
 - The prompt tells the model to use plain English, never mention rule codes, use no placeholders, make no statement about cover, state no outcome, amount or date, and not ask for information already supplied.
 
