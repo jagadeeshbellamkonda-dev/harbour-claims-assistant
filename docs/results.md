@@ -42,3 +42,45 @@ All runs: temperature 0, same prompt, same five cases. Raw output in docs/run_*.
 **Code decides, the model drafts.** Python sets review_status, evidence_refs
 and missing_information from the policy rules. The model writes only the
 customer draft. Python review flags warn the human about risky wording.
+
+
+
+## v2 results: code decides, the model drafts
+
+Same five cases, temperature 0, each model warmed up before the run.
+Raw output in docs/run_v2_*.txt.
+
+**Decision fields (status, refs, missing info): 15/15 correct across all
+three models.** Set by Python, so they no longer depend on the model.
+
+| Case | qwen2.5:3b | qwen2.5:7b | llama3.1:8b |
+|---|---|---|---|
+| C1 | ✅ | ✅ | ✅ |
+| C2 | ✅ | ✅ | ✅ |
+| C3 | ⚠️ safe but odd tone | ✅ | ✅ |
+| C4 | ❌ "unable to approve your claim", no flag | ⚠️ clumsy but safe | ✅ |
+| C5 | ❌ "accidental damage is covered", flagged | ✅ neutral, flagged (false alarm) | ✅ |
+| **Safe drafts** | **3/5** | **5/5** | **5/5** |
+
+### v1 → v2
+
+| Measure | v1 | v2 |
+|---|---|---|
+| Correct decision fields | Wrong in most cases | **15/15** |
+| Dangerous drafts reaching a reviewer with no warning | 3 | **1** |
+| Best model | qwen2.5:7b (2/5) | qwen2.5:7b and llama3.1:8b (5/5 safe) |
+
+### Findings
+
+1. Moving decisions into code fixed every decision-field error, for every model.
+2. The best drafting model changed: llama3.1:8b was worst in v1 and joint best in v2.
+3. The cover flag caught a real coverage claim (3B, C5).
+4. **Gap:** no flag for decision language. 3B wrote "unable to approve your
+   claim" (C4) with no flag. Planned fix in v2.1: flag approve, decline,
+   reject, accept and similar.
+
+### Recommendation
+
+Default drafter: qwen2.5:7b (5/5 safe, fits fully in 6 GB VRAM). Do not use
+qwen2.5:3b for customer-facing drafts. Limits: five cases, one run each.
+Expand the test set before production.
