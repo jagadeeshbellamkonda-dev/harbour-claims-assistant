@@ -6,12 +6,11 @@ import pytest
 import app
 
 ROOT = Path(__file__).resolve().parent.parent
-GOOD = {
-    "draft_reply": "A handler will review your claim and be in touch.",
-    "evidence_refs": ["H1", "H5"],
-    "missing_information": [],
-    "review_status": "READY_FOR_HUMAN_REVIEW",
-}
+GOOD_DRAFT = "A handler will review your claim and be in touch."
+
+
+def draft_json(text=GOOD_DRAFT):
+    return json.dumps({"draft_reply": text})
 
 
 def fake_returning(payload):
@@ -34,16 +33,96 @@ def run_case(case_id, model_fn, capsys, **kw):
     return capsys.readouterr().out
 
 
-# ---- successful result and output sections
+def facts_for(case_id):
+    return app.build_facts(app.load_case(case_id))
+
+
+# ---- decide_status (code decides)
+
+EXPECTED = {
+    "C1": ("READY_FOR_HUMAN_REVIEW", ["H1", "H5"], []),
+    "C2": ("NEEDS_INFORMATION", ["H2"], ["incident_date"]),
+    "C3": ("READY_FOR_HUMAN_REVIEW", ["H4", "H5"], []),
+    "C4": ("BLOCKED", ["H3", "H5"], []),
+    "C5": ("READY_FOR_HUMAN_REVIEW", ["H5"], []),
+}
+
+
+@pytest.mark.parametrize("case_id", app.CASE_IDS)
+def test_decide_status_all_cases(case_id):
+    d = app.decide_status(facts_for(case_id))
+    status, refs, missing = EXPECTED[case_id]
+    assert (d["review_status"], d["evidence_refs"], d["missing_information"]) == (status, refs, missing)
+
+
+def test_c5_has_not_covered_note_and_others_do_not():
+    assert "handler must decide" in app.decide_status(facts_for("C5"))["note"]
+    for cid in ("C1", "C2", "C3", "C4"):
+        assert app.decide_status(facts_for(cid))["note"] is None
+
+
+def test_lapsed_beats_missing_field():
+    f = facts_for("C4")
+    f["incident_date"] = None
+    assert app.decide_status(f)["review_status"] == "BLOCKED"
+
+
+def test_cancelled_is_blocked():
+    f = facts_for("C1")
+    f["policy_status"] = "cancelled"
+    d = app.decide_status(f)
+    assert d["review_status"] == "BLOCKED" and d["evidence_refs"] == ["H3", "H5"]
+
+
+def test_missing_policy_number_is_needs_information():
+    f = facts_for("C1")
+    f["policy_number"] = None
+    d = app.decide_status(f)
+    assert d["review_status"] == "NEEDS_INFORMATION"
+    assert d["missing_information"] == ["policy_number"]
+
+
+def test_thirty_day_boundary():
+    f = facts_for("C1")
+    f["days_from_incident_to_report"] = 30
+    assert app.decide_status(f)["evidence_refs"] == ["H1", "H5"]
+    f["days_from_incident_to_report"] = 31
+    d = app.decide_status(f)
+    assert d["evidence_refs"] == ["H5"] and d["note"]
+
+
+# ---- model drafts only; it cannot change decided fields
 
 def test_successful_c1(capsys):
-    out = run_case("C1", fake_returning(GOOD), capsys)
-    for section in ("SUPPLIED FACTS", "SUPPLIED POLICY", "MODEL USED", "DRAFT RESULT FOR HUMAN REVIEW"):
+    out = run_case("C1", fake_returning({"draft_reply": GOOD_DRAFT}), capsys)
+    for section in ("SUPPLIED FACTS", "SUPPLIED POLICY", "MODEL USED",
+                    "DRAFT RESULT FOR HUMAN REVIEW", "REVIEW FLAGS"):
         assert section in out
-    assert "READY_FOR_HUMAN_REVIEW" in out
-    assert "A handler will review your claim" in out
+    assert "review_status: READY_FOR_HUMAN_REVIEW" in out
+    assert "evidence_refs: H1, H5" in out
+    assert GOOD_DRAFT in out
     assert "A human must check" in out
     assert '"days_from_incident_to_report": 4' in out
+
+
+@pytest.mark.parametrize("extra", [
+    {"review_status": "BLOCKED"},
+    {"evidence_refs": ["H1"]},
+    {"missing_information": ["policy_number"]},
+])
+def test_extra_keys_from_model_rejected(extra, capsys):
+    out = run_case("C1", fake_returning({"draft_reply": GOOD_DRAFT, **extra}), capsys)
+    assert "review_status: UNAVAILABLE" in out
+    assert GOOD_DRAFT not in out
+
+
+def test_model_cannot_change_decided_fields():
+    facts = facts_for("C4")
+    result = app.get_result(facts, "policy", {"host": "h"}, fake_returning({"draft_reply": GOOD_DRAFT}))
+    assert result["review_status"] == "BLOCKED"
+    assert result["evidence_refs"] == ["H3", "H5"]
+    assert result["missing_information"] == []
+    assert set(result) == app.RESULT_KEYS
 
 
 # ---- failures become the safe UNAVAILABLE state
@@ -52,19 +131,25 @@ def test_successful_c1(capsys):
     "payload",
     [
         "this is not json",
-        {**GOOD, "review_status": "APPROVED"},
-        {**GOOD, "evidence_refs": ["H9"]},
-        {**GOOD, "missing_information": ["shoe_size"]},
-        {k: v for k, v in GOOD.items() if k != "review_status"},
-        {**GOOD, "extra": 1},
+        {},
+        {"draft_reply": ""},
+        {"draft_reply": 42},
+        ["draft_reply"],
     ],
 )
 def test_invalid_responses_are_unavailable(payload, capsys):
     out = run_case("C1", fake_returning(payload), capsys)
     assert "review_status: UNAVAILABLE" in out
     assert "reason:" in out
-    assert GOOD["draft_reply"] not in out
     assert "Traceback" not in out
+
+
+def test_unavailable_shows_rule_decision_not_a_draft(capsys):
+    out = run_case("C2", fake_raising(ConnectionError("refused")), capsys)
+    assert "review_status: UNAVAILABLE" in out
+    assert "Rule decision (computed in Python): status=NEEDS_INFORMATION; refs=H2; missing=incident_date" in out
+    assert "draft_reply:" not in out
+    assert "No draft to check." in out
 
 
 def test_connection_error(capsys):
@@ -91,6 +176,54 @@ def test_simulate_timeout_makes_no_call(capsys):
     assert "review_status: UNAVAILABLE" in out
     assert "No model was called" in out
     assert "draft_reply:" not in out
+    assert "Rule decision (computed in Python): status=READY_FOR_HUMAN_REVIEW; refs=H1, H5" in out
+
+
+# ---- review flags
+
+def flags_for(draft, case_id="C1"):
+    d = app.decide_status(facts_for(case_id))
+    return app.review_flags(draft, facts_for(case_id), d["missing_information"])
+
+
+@pytest.mark.parametrize("draft,fragment", [
+    ("This falls under H1 of our rules.", "rule code"),
+    ("Dear [Customer Name], thanks.", "square brackets"),
+    ("We will pay £4,000 soon.", "currency"),
+    ("You are covered for this.", "cover"),
+    ("You have cover for this.", "cover"),
+    ("Check your coverage.", "cover"),
+    ("You are NOT COVERED.", "cover"),
+])
+def test_flags_raised(draft, fragment):
+    assert any(fragment in f for f in flags_for(draft))
+
+
+def test_clean_draft_has_no_flags():
+    assert flags_for(GOOD_DRAFT) == []
+
+
+def test_cover_flag_is_whole_word_only():
+    assert flags_for("The roof was recovered by the builder.") == []
+    assert flags_for("Some items are uncovered.") == []
+
+
+def test_asking_for_supplied_field_is_flagged():
+    assert any("policy_number" in f for f in flags_for("Please provide your policy number."))
+    assert any("incident_date" in f for f in flags_for("Could you tell us the date of the incident?"))
+
+
+def test_asking_for_missing_field_is_not_flagged():
+    d = "Could you please tell us the date the incident happened?"
+    assert flags_for(d, "C2") == []
+
+
+def test_flags_do_not_block_the_draft(capsys):
+    out = run_case("C1", fake_returning({"draft_reply": "Dear [Customer Name], you are covered."}), capsys)
+    assert "review_status: READY_FOR_HUMAN_REVIEW" in out
+    assert "draft_reply:" in out
+    assert "- Draft contains square brackets" in out
+    assert "UNAVAILABLE" not in out
 
 
 # ---- offline demo
@@ -102,18 +235,16 @@ def test_offline_demo_all_cases(case_id, capsys):
     assert "SYNTHETIC" in out
     assert "UNAVAILABLE" not in out
     assert "draft_reply:" in out
+    assert "No flags raised." in out
 
 
-def test_demo_outputs_expected_statuses():
-    expected = {
-        "C1": "READY_FOR_HUMAN_REVIEW",
-        "C2": "NEEDS_INFORMATION",
-        "C3": "READY_FOR_HUMAN_REVIEW",
-        "C4": "BLOCKED",
-        "C5": "READY_FOR_HUMAN_REVIEW",
-    }
-    for cid, status in expected.items():
-        assert app.load_demo_result(cid)["review_status"] == status
+@pytest.mark.parametrize("case_id", app.CASE_IDS)
+def test_demo_matches_decide_status(case_id):
+    demo = app.load_demo_result(case_id)
+    d = app.decide_status(facts_for(case_id))
+    assert demo["review_status"] == d["review_status"]
+    assert demo["evidence_refs"] == d["evidence_refs"]
+    assert demo["missing_information"] == d["missing_information"]
 
 
 # ---- days calculation
@@ -125,8 +256,8 @@ def test_days_calculation():
 
 
 def test_facts_include_derived_days():
-    assert app.build_facts(app.load_case("C1"))["days_from_incident_to_report"] == 4
-    assert app.build_facts(app.load_case("C2"))["days_from_incident_to_report"] is None
+    assert facts_for("C1")["days_from_incident_to_report"] == 4
+    assert facts_for("C2")["days_from_incident_to_report"] is None
 
 
 # ---- input files

@@ -1,31 +1,31 @@
 {
   "_label": "PRERECORDED SYNTHETIC RESULTS for the classroom demo. Not produced by a live model.",
   "C1": {
-    "draft_reply": "Thank you for getting in touch about the storm damage to your roof and bedroom ceiling. Your report was made within 30 days of the incident, so we are referring it to a claims handler for assessment. Referral does not mean your claim has been accepted or that any payment has been approved. A handler will be in touch.",
+    "draft_reply": "Thank you for getting in touch about the storm damage to your roof and bedroom ceiling. We have passed your report to a claims handler who will assess it. This is not a decision on your claim, and no payment has been agreed at this stage. A handler will be in touch.\n\nKind regards,\nHarbour Mutual Claims",
     "evidence_refs": ["H1", "H5"],
     "missing_information": [],
     "review_status": "READY_FOR_HUMAN_REVIEW"
   },
   "C2": {
-    "draft_reply": "Thank you for letting us know about the leak from your washing machine. To look at your claim we need the date the incident happened. Could you please tell us that date? We cannot assess the claim until we have it.",
+    "draft_reply": "Thank you for letting us know about the leak from your washing machine. So that we can look at your claim, could you please tell us the date the incident happened? We cannot go further until we have it.\n\nKind regards,\nHarbour Mutual Claims",
     "evidence_refs": ["H2"],
     "missing_information": ["incident_date"],
     "review_status": "NEEDS_INFORMATION"
   },
   "C3": {
-    "draft_reply": "Thank you for your message. Your claim is currently being assessed, so we are not able to give an outcome or any payment details at this stage. A handler will be in touch.",
+    "draft_reply": "Thank you for your message. Your claim is currently being assessed, so we are not able to share an outcome or any payment details at this stage. A handler will be in touch.\n\nKind regards,\nHarbour Mutual Claims",
     "evidence_refs": ["H4", "H5"],
     "missing_information": [],
     "review_status": "READY_FOR_HUMAN_REVIEW"
   },
   "C4": {
-    "draft_reply": "Thank you for contacting us about the burst pipe. We are unable to progress this request in this reply, and it has been passed to a claims handler who will review your situation and be in touch.",
+    "draft_reply": "Thank you for contacting us about the burst pipe. We understand this is a stressful time. A claims handler will review your case and be in touch.\n\nKind regards,\nHarbour Mutual Claims",
     "evidence_refs": ["H3", "H5"],
     "missing_information": [],
     "review_status": "BLOCKED"
   },
   "C5": {
-    "draft_reply": "Thank you for telling us about your laptop screen. We have passed your question to a claims handler who will review it and be in touch. This message does not confirm whether the damage is covered.",
+    "draft_reply": "Thank you for telling us about your laptop screen. We have passed your question to a claims handler who will review it and be in touch. This message is not a decision on your claim.\n\nKind regards,\nHarbour Mutual Claims",
     "evidence_refs": ["H5"],
     "missing_information": [],
     "review_status": "READY_FOR_HUMAN_REVIEW"
