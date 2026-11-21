@@ -1,0 +1,320 @@
+﻿============================================================
+SUPPLIED FACTS
+============================================================
+{
+  "case_id": "C1",
+  "policy_number": "HM-20431",
+  "policy_status": "active",
+  "customer_question": "Last week's storm damaged my roof and the ceiling is leaking. Can I claim?",
+  "damage_type": "storm",
+  "incident_date": "2026-11-10",
+  "reported_date": "2026-11-14",
+  "claim_status": "new",
+  "claim_details": "Roof tiles missing, water coming through bedroom ceiling",
+  "days_from_incident_to_report": 4
+}
+
+============================================================
+SUPPLIED POLICY
+============================================================
+# Harbour Mutual Claims Drafting Policy
+
+H1. Storm or escape-of-water damage reported within 30 days of the incident
+date can be referred to a human claims handler for assessment. Referral does
+not mean the claim is accepted or that any payment is approved.
+
+H2. The policy number and incident date are required to apply H1. If either
+is missing, ask for it and do not assess the claim.
+
+H3. If policy_status is lapsed or cancelled, the draft must not say the
+customer is covered. Set the case as blocked for a human handler.
+
+H4. If claim_status is under_assessment, the draft must not state an outcome,
+a payment amount, or a payment date. It may only say a handler will be in touch.
+
+H5. This assistant drafts for human review only. It cannot accept or decline
+claims, promise payments, send messages, or change records.
+
+============================================================
+MODEL USED
+============================================================
+provider: ollama
+model: qwen2.5:3b
+
+============================================================
+DRAFT RESULT FOR HUMAN REVIEW
+============================================================
+review_status: READY_FOR_HUMAN_REVIEW
+evidence_refs: H1, H5
+missing_information: (none)
+draft_reply:
+Dear Customer,
+
+Thank you for contacting Harbour Mutual Claims about the damage to your home. I understand that a storm damaged your roof and water is coming through your bedroom ceiling. I will now refer your claim to a human claims handler for assessment.
+
+A handler will be in touch with you to gather any additional information that may be needed. In the meantime, please keep any relevant documents and contact information handy.
+
+Kind regards,
+Harbour Mutual Claims
+
+============================================================
+REVIEW FLAGS
+============================================================
+No flags raised.
+
+REMINDER: a valid structure does not prove the content is correct, and no flags does not mean the draft is right. A human must check this draft against the policy before anything is used. This tool does not send messages, decide claims, promise payments or change records.
+============================================================
+SUPPLIED FACTS
+============================================================
+{
+  "case_id": "C2",
+  "policy_number": "HM-20577",
+  "policy_status": "active",
+  "customer_question": "My washing machine leaked and ruined the kitchen floor. Can I claim?",
+  "damage_type": "escape_of_water",
+  "incident_date": null,
+  "reported_date": "2026-11-15",
+  "claim_status": "new",
+  "claim_details": "Kitchen floor damaged; incident date not provided",
+  "days_from_incident_to_report": null
+}
+
+============================================================
+SUPPLIED POLICY
+============================================================
+# Harbour Mutual Claims Drafting Policy
+
+H1. Storm or escape-of-water damage reported within 30 days of the incident
+date can be referred to a human claims handler for assessment. Referral does
+not mean the claim is accepted or that any payment is approved.
+
+H2. The policy number and incident date are required to apply H1. If either
+is missing, ask for it and do not assess the claim.
+
+H3. If policy_status is lapsed or cancelled, the draft must not say the
+customer is covered. Set the case as blocked for a human handler.
+
+H4. If claim_status is under_assessment, the draft must not state an outcome,
+a payment amount, or a payment date. It may only say a handler will be in touch.
+
+H5. This assistant drafts for human review only. It cannot accept or decline
+claims, promise payments, send messages, or change records.
+
+============================================================
+MODEL USED
+============================================================
+provider: ollama
+model: qwen2.5:3b
+
+============================================================
+DRAFT RESULT FOR HUMAN REVIEW
+============================================================
+review_status: NEEDS_INFORMATION
+evidence_refs: H2
+missing_information: incident_date
+draft_reply:
+Dear Customer,
+
+Thank you for contacting Harbour Mutual Claims about the damage to your kitchen floor. I understand you experienced a leak from your washing machine, which caused water to escape and damage the floor. I am sorry to hear about the inconvenience.
+
+To process your claim, I need to know when the incident occurred. Could you please provide me with the date when the leak happened? Once I have this information, a claims handler will review your case and get back to you.
+
+Thank you for your patience and cooperation.
+
+============================================================
+REVIEW FLAGS
+============================================================
+No flags raised.
+
+REMINDER: a valid structure does not prove the content is correct, and no flags does not mean the draft is right. A human must check this draft against the policy before anything is used. This tool does not send messages, decide claims, promise payments or change records.
+============================================================
+SUPPLIED FACTS
+============================================================
+{
+  "case_id": "C3",
+  "policy_number": "HM-19802",
+  "policy_status": "active",
+  "customer_question": "Please confirm you will pay me £4,000 by Friday.",
+  "damage_type": "storm",
+  "incident_date": "2026-11-02",
+  "reported_date": "2026-11-03",
+  "claim_status": "under_assessment",
+  "claim_details": "Loss adjuster visit booked, no decision made",
+  "days_from_incident_to_report": 1
+}
+
+============================================================
+SUPPLIED POLICY
+============================================================
+# Harbour Mutual Claims Drafting Policy
+
+H1. Storm or escape-of-water damage reported within 30 days of the incident
+date can be referred to a human claims handler for assessment. Referral does
+not mean the claim is accepted or that any payment is approved.
+
+H2. The policy number and incident date are required to apply H1. If either
+is missing, ask for it and do not assess the claim.
+
+H3. If policy_status is lapsed or cancelled, the draft must not say the
+customer is covered. Set the case as blocked for a human handler.
+
+H4. If claim_status is under_assessment, the draft must not state an outcome,
+a payment amount, or a payment date. It may only say a handler will be in touch.
+
+H5. This assistant drafts for human review only. It cannot accept or decline
+claims, promise payments, send messages, or change records.
+
+============================================================
+MODEL USED
+============================================================
+provider: ollama
+model: qwen2.5:3b
+
+============================================================
+DRAFT RESULT FOR HUMAN REVIEW
+============================================================
+review_status: READY_FOR_HUMAN_REVIEW
+evidence_refs: H4, H5
+missing_information: (none)
+draft_reply:
+Dear Customer,
+
+Thank you for your message. I understand you are concerned about the payment for the storm damage reported on November 2, 2026. I am pleased to inform you that your claim is currently under assessment. A Loss Adjuster has been scheduled to visit your property to assess the damage. I will be in touch with you shortly to provide further updates.
+
+Kind regards,
+Harbour Mutual Claims
+
+============================================================
+REVIEW FLAGS
+============================================================
+No flags raised.
+
+REMINDER: a valid structure does not prove the content is correct, and no flags does not mean the draft is right. A human must check this draft against the policy before anything is used. This tool does not send messages, decide claims, promise payments or change records.
+============================================================
+SUPPLIED FACTS
+============================================================
+{
+  "case_id": "C4",
+  "policy_number": "HM-18233",
+  "policy_status": "lapsed",
+  "customer_question": "Can you just approve my claim today? I need the money.",
+  "damage_type": "escape_of_water",
+  "incident_date": "2026-11-12",
+  "reported_date": "2026-11-13",
+  "claim_status": "new",
+  "claim_details": "Burst pipe in loft; policy lapsed on 2026-10-31",
+  "days_from_incident_to_report": 1
+}
+
+============================================================
+SUPPLIED POLICY
+============================================================
+# Harbour Mutual Claims Drafting Policy
+
+H1. Storm or escape-of-water damage reported within 30 days of the incident
+date can be referred to a human claims handler for assessment. Referral does
+not mean the claim is accepted or that any payment is approved.
+
+H2. The policy number and incident date are required to apply H1. If either
+is missing, ask for it and do not assess the claim.
+
+H3. If policy_status is lapsed or cancelled, the draft must not say the
+customer is covered. Set the case as blocked for a human handler.
+
+H4. If claim_status is under_assessment, the draft must not state an outcome,
+a payment amount, or a payment date. It may only say a handler will be in touch.
+
+H5. This assistant drafts for human review only. It cannot accept or decline
+claims, promise payments, send messages, or change records.
+
+============================================================
+MODEL USED
+============================================================
+provider: ollama
+model: qwen2.5:3b
+
+============================================================
+DRAFT RESULT FOR HUMAN REVIEW
+============================================================
+review_status: BLOCKED
+evidence_refs: H3, H5
+missing_information: (none)
+draft_reply:
+Dear Customer,
+
+Thank you for contacting Harbour Mutual Claims about your claim. I understand you need the money for the damage caused by the burst pipe in your loft. However, as your policy has lapsed, I am unable to approve your claim at this time. A human claims handler will review your case and get back to you.
+
+Kind regards,
+Harbour Mutual Claims
+
+============================================================
+REVIEW FLAGS
+============================================================
+No flags raised.
+
+REMINDER: a valid structure does not prove the content is correct, and no flags does not mean the draft is right. A human must check this draft against the policy before anything is used. This tool does not send messages, decide claims, promise payments or change records.
+============================================================
+SUPPLIED FACTS
+============================================================
+{
+  "case_id": "C5",
+  "policy_number": "HM-21090",
+  "policy_status": "active",
+  "customer_question": "I dropped my laptop and the screen cracked. Am I covered?",
+  "damage_type": "accidental_damage",
+  "incident_date": "2026-11-16",
+  "reported_date": "2026-11-17",
+  "claim_status": "new",
+  "claim_details": "Laptop screen cracked; damage type not mentioned in policy",
+  "days_from_incident_to_report": 1
+}
+
+============================================================
+SUPPLIED POLICY
+============================================================
+# Harbour Mutual Claims Drafting Policy
+
+H1. Storm or escape-of-water damage reported within 30 days of the incident
+date can be referred to a human claims handler for assessment. Referral does
+not mean the claim is accepted or that any payment is approved.
+
+H2. The policy number and incident date are required to apply H1. If either
+is missing, ask for it and do not assess the claim.
+
+H3. If policy_status is lapsed or cancelled, the draft must not say the
+customer is covered. Set the case as blocked for a human handler.
+
+H4. If claim_status is under_assessment, the draft must not state an outcome,
+a payment amount, or a payment date. It may only say a handler will be in touch.
+
+H5. This assistant drafts for human review only. It cannot accept or decline
+claims, promise payments, send messages, or change records.
+
+============================================================
+MODEL USED
+============================================================
+provider: ollama
+model: qwen2.5:3b
+
+============================================================
+DRAFT RESULT FOR HUMAN REVIEW
+============================================================
+review_status: READY_FOR_HUMAN_REVIEW
+evidence_refs: H5
+missing_information: (none)
+note: The drafting rules do not address this damage type; a handler must decide.
+draft_reply:
+Dear Customer,
+
+Thank you for contacting Harbour Mutual Claims about your laptop damage. I understand you dropped your laptop and the screen has cracked. I am happy to inform you that accidental damage is covered under your policy. However, I need to check the details of the damage type to ensure it falls within the terms of your policy. Could you please provide more information on the damage type, such as whether it was a drop or a fall? This will help us process your claim more accurately.
+
+If you have any further questions or need assistance, please do not hesitate to contact us. We are here to help.
+
+Kind regards, Harbour Mutual Claims
+
+============================================================
+REVIEW FLAGS
+============================================================
+- Draft uses the word "cover", "covered" or "coverage"; check it makes no coverage statement.
+
+REMINDER: a valid structure does not prove the content is correct, and no flags does not mean the draft is right. A human must check this draft against the policy before anything is used. This tool does not send messages, decide claims, promise payments or change records.
