@@ -1,30 +1,43 @@
-# Harbour Mutual Claims-Draft Review Tool (classroom demo)
+# Harbour Mutual Claims-Draft Review Tool
 
-A small command-line tool for a **fictional** insurer. All people, policies and
-cases are synthetic.
+A command-line tool that drafts customer replies for a **fictional** home insurer, using synthetic cases, for a human claims handler to review.
 
 ## The problem
 
-Claims handlers spend time drafting routine replies to customers. This tool
-drafts a reply from one case record and a short written policy, so a human
-handler can review it faster. The draft is a starting point, never a decision.
+Claims handlers spend time writing routine replies. A reply that wrongly tells a customer they are, or are not, covered is costly. This project tests where a language model can be trusted in that job. It finds that the model should write the draft but should not make the decisions, and that a human must still check every draft.
 
-## What it will and will not do
+## Results at a glance
 
-It will:
-- load one case from `cases.json` and the rules in `policy.md`;
-- compute days from incident to report in Python (the model never does date maths);
-- decide the review status, cited policy rules and missing fields in Python;
-- ask a model only to write the customer draft reply;
-- check the structure of the answer, run wording checks (REVIEW FLAGS) and show it for human review.
+Three local models (qwen2.5:3b, qwen2.5:7b, llama3.1:8b), five synthetic cases, temperature 0. Full scorecards are in [docs/results.md](docs/results.md).
 
-It will not:
-- send messages, accept or decline claims, promise payments or change records;
-- prove the draft is correct. Valid structure is not correct content, so a human must check every draft;
-- provide a web UI, database, RAG, login or any production integration.
+| Measure | v1: model decides and drafts | v2: code decides, model drafts |
+|---|---|---|
+| Decision fields correct (status, rules cited, missing info) | Wrong in most cases; models invented missing fields in 10 of 14 completed runs | **15/15** (set by Python, so independent of the model) |
+| Unsafe drafts reaching a reviewer with no warning | 3 | 1 (qwen2.5:3b on C4: "unable to approve your claim"). A decision-language flag added afterwards now catches it, checked on that one case only |
+| Best model | qwen2.5:7b, 2/5 full passes | qwen2.5:7b and llama3.1:8b, 5/5 safe drafts. The recommended drafter is qwen2.5:7b |
 
-If the model is unreachable, slow, missing, or returns something invalid, the tool shows a safe
-**UNAVAILABLE** state with a short reason and a manual fallback message. It never shows a traceback or an old draft.
+**Limits:** five test cases, one run per model, three models. The review flags are simple text checks, not guarantees. A human reviews every draft, and the test set should be expanded before any real use.
+
+## Design decision: code decides, the model drafts
+
+- In v1 the model chose the status, cited rules and missing fields. It invented missing information, told a lapsed-policy customer "you are not covered", and told another customer accidental damage "is covered".
+- Every one of those errors passed structure validation, because the fields were valid and the content was wrong.
+- In v2, `decide_status()` applies the policy rules in Python before any model call. The model receives the result as fixed facts and returns only `draft_reply`. Any extra key is rejected.
+- Python review flags then warn the reviewer about risky wording: rule codes, placeholders, "cover" wording, amounts, decision language and requests for information already supplied.
+
+## What this tool will never do
+
+- Send a message to a customer.
+- Accept or decline a claim.
+- Promise a payment, an amount or a date.
+- Change a record.
+- Treat a draft as verified. Flags are heuristics, so a human must review every draft.
+
+## Tech
+
+Python, Ollama (local models), python-dotenv, and pytest (fake model only, no external calls). Claude Code was used for the build.
+
+---
 
 ## Setup on Windows (PowerShell) with Ollama
 
@@ -60,24 +73,22 @@ Output has five sections: SUPPLIED FACTS, SUPPLIED POLICY, MODEL USED, DRAFT RES
 Review statuses: `READY_FOR_HUMAN_REVIEW`, `NEEDS_INFORMATION`, `BLOCKED`, or `UNAVAILABLE` (tool-generated when no valid draft exists).
 In the UNAVAILABLE state the result also shows one line, "Rule decision (computed in Python)", with the decided status, refs and missing fields. It is never a draft.
 
-## Design decision: code decides, the model drafts
+If the model is unreachable, slow, missing, or returns something invalid, the tool shows a safe
+**UNAVAILABLE** state with a short reason and a manual fallback message. It never shows a traceback or an old draft.
 
-Version 1 let the model choose `review_status`, `evidence_refs` and `missing_information` as well as write the draft.
-Python only checked the structure. The evaluation in `docs/results.md` (three models, five cases, temperature 0) found:
+## Decision rules (computed in Python)
 
-- **Invented missing information in every model**: qwen2.5:3b in 4 of 5 cases, qwen2.5:7b in 3 of 5, llama3.1:8b in 3 of 4. Python can see which fields are null, so this is a design problem, not a model-size problem.
-- **qwen2.5:7b set the lapsed-policy case (C4) to NEEDS_INFORMATION** and told the customer "you are not covered". The 3B model had got C4's status right.
-- **qwen2.5:3b told C5 that accidental damage "is covered"**, which the policy does not say.
-- **Drafts leaked internal wording**, such as the rule code "H1" and placeholders like `[Customer Name]`.
-- **Every dangerous result passed structure validation**, because the fields were valid but the content was wrong. A bigger model was not uniformly better.
+`decide_status()` applies these in order:
 
-Version 2 therefore splits the work:
+1. Lapsed or cancelled policy: BLOCKED (H3, H5).
+2. A null `policy_number` or `incident_date`: NEEDS_INFORMATION (H2), listing those fields.
+3. Claim under assessment: READY_FOR_HUMAN_REVIEW (H4, H5).
+4. Storm or escape of water reported within 30 days: READY_FOR_HUMAN_REVIEW (H1, H5).
+5. Anything else: READY_FOR_HUMAN_REVIEW (H5) with the note "The drafting rules do not address this damage type; a handler must decide."
 
-- `decide_status()` applies the hard rules in Python before any model call, in this order: lapsed or cancelled policy gives BLOCKED (H3, H5); a null `policy_number` or `incident_date` gives NEEDS_INFORMATION (H2) and lists those fields; `under_assessment` gives READY_FOR_HUMAN_REVIEW (H4, H5); storm or escape of water reported within 30 days gives READY_FOR_HUMAN_REVIEW (H1, H5); anything else gives READY_FOR_HUMAN_REVIEW (H5) with the note "The drafting rules do not address this damage type; a handler must decide."
-- The model receives those decisions as fixed facts and returns only `{"draft_reply": "..."}`. Any extra key makes the result UNAVAILABLE, so the model cannot change the status, refs or missing fields.
-- The prompt tells the model to use plain English, never mention rule codes, use no placeholders, make no statement about cover, state no outcome, amount or date, and not ask for information already supplied.
+The model is told to use plain English, never mention rule codes, use no placeholders, make no statement about cover, state no outcome, amount or date, and not ask for information already supplied.
 
-### Review flags
+## Review flags and their limits
 
 Python checks the draft and prints warnings under REVIEW FLAGS for: a rule code (H1 to H5); square brackets; the whole words "cover", "covered" or "coverage" (case-insensitive); a currency amount; decision language (the whole words approve, approved, approval, decline, declined, reject, rejected, accept, accepted, refuse, refused, deny, denied, or the phrase "will pay", case-insensitive); and a request for a field that was already supplied.
 
