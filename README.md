@@ -18,6 +18,17 @@ Three local models (qwen2.5:3b, qwen2.5:7b, llama3.1:8b), five synthetic cases, 
 
 **Limits:** five test cases, one run per model, three models. The review flags are simple text checks, not guarantees. A human reviews every draft, and the test set should be expanded before any real use.
 
+### One case, before and after (C5: accidental damage, not in the drafting rules)
+
+**v1, qwen2.5:3b (model decides):**
+> "Based on the information provided, it appears that accidental damage is
+> covered under your policy."
+
+**v2, qwen2.5:7b (code decides, model drafts):**
+> "A handler will review your case to determine if your laptop screen damage
+> is covered."
+> Flags: 🚩 cover wording, check it makes no coverage statement.
+
 ## Design decision: code decides, the model drafts
 
 - In v1 the model chose the status, cited rules and missing fields. It invented missing information, told a lapsed-policy customer "you are not covered", and told another customer accidental damage "is covered".
@@ -109,3 +120,30 @@ python -m pytest
 ```
 
 The tests use a fake model function and never call Ollama or any external API.
+
+
+## What I learned
+
+- **Valid structure is not correct content.** In v1, every dangerous draft
+  passed my JSON validation. The fields were real field names; the facts
+  were wrong. It reminded me of a Power BI report that refreshes without
+  errors but shows the wrong numbers: a successful run proves nothing
+  about correctness.
+
+- **A bigger model is not automatically safer.** qwen2.5:7b fixed two cases
+  that the 3B model failed, but introduced a new failure: it told a lapsed
+  customer "you are not covered". I only caught it because I re-ran every
+  case, not just the ones that had failed.
+
+- **If it can be calculated, don't ask the model.** Every model invented
+  "missing" fields, across two model families. Moving status, policy
+  references and missing fields into Python fixed all of them for every
+  model. The LLM now does what it is good at: wording.
+
+- **The best model depends on the job.** llama3.1:8b came last when it had
+  to make decisions, and joint best once it only had to write drafts.
+
+- **Test the safety net, not just the system.** Scoring my review flags
+  showed they missed decision language ("unable to approve your claim").
+  I added a check and proved it against the exact failing sentence.
+  
