@@ -84,3 +84,10 @@ three models.** Set by Python, so they no longer depend on the model.
 Default drafter: qwen2.5:7b (5/5 safe, fits fully in 6 GB VRAM). Do not use
 qwen2.5:3b for customer-facing drafts. Limits: five cases, one run each.
 Expand the test set before production.
+
+
+## v2.1: decision-language flag
+
+Fix for the gap found in v2. Re-ran qwen2.5:3b on C4: the draft again said
+"I am unable to approve your claim", and it is now flagged ("Draft uses
+decision language"). A test uses the exact failing sentence from v2.
