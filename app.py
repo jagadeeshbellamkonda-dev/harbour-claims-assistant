@@ -334,6 +334,13 @@ _ASK_WORDS = re.compile(
 )
 
 
+_DECISION_WORDS = re.compile(
+    r"\b(approve|approved|approval|decline|declined|reject|rejected|"
+    r"accept|accepted|refuse|refused|deny|denied|will pay)\b",
+    re.IGNORECASE,
+)
+
+
 def review_flags(draft, facts, missing_information):
     """Python warnings for the human reviewer. Flags never block the draft."""
     flags = []
@@ -345,6 +352,8 @@ def review_flags(draft, facts, missing_information):
         flags.append('Draft uses the word "cover", "covered" or "coverage"; check it makes no coverage statement.')
     if re.search(r"[£$€]\s?\d|\bGBP\s?\d|\d[\d,.]*\s?(pounds|GBP)\b", draft, re.IGNORECASE):
         flags.append("Draft contains a currency amount.")
+    if _DECISION_WORDS.search(draft):
+        flags.append("Draft uses decision language; check it does not accept, decline or promise anything.")
     sentences = re.split(r"[.!?\n]+", draft)
     for field, phrases in _SUPPLIED_FIELD_PHRASES.items():
         if facts.get(field) is None or field in missing_information:

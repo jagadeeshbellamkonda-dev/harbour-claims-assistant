@@ -79,10 +79,13 @@ Version 2 therefore splits the work:
 
 ### Review flags
 
-Python checks the draft and prints warnings under REVIEW FLAGS for: a rule code (H1 to H5); square brackets; the whole words "cover", "covered" or "coverage" (case-insensitive); a currency amount; and a request for a field that was already supplied.
+Python checks the draft and prints warnings under REVIEW FLAGS for: a rule code (H1 to H5); square brackets; the whole words "cover", "covered" or "coverage" (case-insensitive); a currency amount; decision language (the whole words approve, approved, approval, decline, declined, reject, rejected, accept, accepted, refuse, refused, deny, denied, or the phrase "will pay", case-insensitive); and a request for a field that was already supplied.
+
+The decision-language flag was added because qwen2.5:3b wrote "I am unable to approve your claim" for C4 and nothing was flagged (see `docs/results.md`).
 
 Limits you should know about:
 - The cover flag matches those three whole words only. It does **not** match "uncovered", "covers", "covering" or "recovered", so a draft can make a coverage statement without raising it.
+- The decision-language flag can raise false alarms, for example on "we accept documents by email". That is acceptable because flags never block a draft. It also matches only the listed forms: it does not match "approves", "approving", "declining", "rejection", "acceptance", "denies", or phrasing like "we'll pay", so other decision wording can slip through.
 - The supplied-field check is a simple phrase heuristic and can miss requests or flag harmless wording.
 - Flags never block a draft, and "No flags raised" does not mean the draft is correct. A human must still review every draft.
 

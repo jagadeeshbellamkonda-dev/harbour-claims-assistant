@@ -210,6 +210,47 @@ def test_cover_flag_is_whole_word_only():
     assert flags_for("Some items are uncovered.") == []
 
 
+DECISION_FLAG = "Draft uses decision language; check it does not accept, decline or promise anything."
+
+
+def test_decision_language_flagged_for_c4_sentence():
+    draft = "as your policy has lapsed, I am unable to approve your claim at this time"
+    assert DECISION_FLAG in flags_for(draft, "C4")
+
+
+def test_handler_sentence_has_no_decision_flag():
+    assert DECISION_FLAG not in flags_for("A handler will review your case.")
+
+
+@pytest.mark.parametrize("word", [
+    "approve", "approved", "approval", "decline", "declined", "reject", "rejected",
+    "accept", "accepted", "refuse", "refused", "deny", "denied", "Approved", "DENIED",
+])
+def test_each_decision_word_flagged(word):
+    assert DECISION_FLAG in flags_for(f"We have {word} this.")
+
+
+def test_will_pay_phrase_flagged():
+    assert DECISION_FLAG in flags_for("We Will Pay you soon.")
+
+
+@pytest.mark.parametrize("draft", [
+    "That is acceptable to us.",
+    "We are approving nothing today.",
+    "We will review it.",
+])
+def test_decision_flag_near_misses_not_flagged(draft):
+    assert DECISION_FLAG not in flags_for(draft)
+
+
+def test_decision_flag_does_not_block_draft(capsys):
+    out = run_case("C4", fake_returning({"draft_reply": "I am unable to approve your claim."}), capsys)
+    assert "review_status: BLOCKED" in out
+    assert "draft_reply:" in out
+    assert f"- {DECISION_FLAG}" in out
+    assert "UNAVAILABLE" not in out
+
+
 def test_asking_for_supplied_field_is_flagged():
     assert any("policy_number" in f for f in flags_for("Please provide your policy number."))
     assert any("incident_date" in f for f in flags_for("Could you tell us the date of the incident?"))
